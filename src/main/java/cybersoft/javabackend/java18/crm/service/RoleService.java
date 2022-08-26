@@ -9,7 +9,11 @@ public interface RoleService {
 
     boolean insert(RoleModel roleModel);
 
-    boolean update(int id, RoleModel roleModel);
+    boolean update(RoleModel roleModel);
 
     boolean delete(int id);
+
+    RoleModel findById(int id);
+
+    List<RoleModel> findAll(int pageSize, int currentPage);
 }

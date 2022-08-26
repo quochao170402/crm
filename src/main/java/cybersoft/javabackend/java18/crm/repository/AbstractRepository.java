@@ -33,11 +33,4 @@ public class AbstractRepository<T> {
         }
     }
 
-    public int executeCountRecord(JdbcExecute<Integer> processor) {
-        try (Connection connection = MySQLConnection.getConnection()) {
-            return processor.processQuery(connection);
-        } catch (SQLException e) {
-            throw new DatabaseNotFoundException(e.getMessage());
-        }
-    }
 }

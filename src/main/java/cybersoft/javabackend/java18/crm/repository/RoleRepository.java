@@ -8,9 +8,13 @@ public interface RoleRepository {
 
     List<RoleModel> findAll();
 
+    RoleModel findById(int id);
+
     boolean insert(RoleModel roleModel);
 
-    boolean update(int id, RoleModel roleModel);
+    boolean update(RoleModel roleModel);
 
-    boolean delete(int id);
+    boolean deleteById(int id);
+
+    List<RoleModel> findAll(int pageSize, int currentPage);
 }

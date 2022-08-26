@@ -1,10 +1,11 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
-import cybersoft.javabackend.java18.crm.model.RoleModel;
-import cybersoft.javabackend.java18.crm.service.RoleService;
-import cybersoft.javabackend.java18.crm.service.impl.RoleServiceImpl;
+import cybersoft.javabackend.java18.crm.model.StatusModel;
+import cybersoft.javabackend.java18.crm.service.StatusService;
+import cybersoft.javabackend.java18.crm.service.impl.StatusServiceImpl;
 import cybersoft.javabackend.java18.crm.utils.UrlUtils;
+import cybersoft.javabackend.java18.crm.utils.common.GsonHelper;
 import cybersoft.javabackend.java18.crm.utils.common.ResponseHelper;
 import cybersoft.javabackend.java18.crm.utils.common.ResponseModel;
 
@@ -13,25 +14,25 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@WebServlet(name = "roleController",
+@WebServlet(name = "statusController",
         urlPatterns = {
-                UrlUtils.ROLE,
+                UrlUtils.STATUS
         })
-public class RoleController extends HttpServlet {
+public class StatusController extends HttpServlet {
+
     private Gson gson;
-    private RoleService roleService;
+    private StatusService statusService;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        gson = new Gson();
-        roleService = RoleServiceImpl.getService();
+        gson = GsonHelper.getGson();
+        statusService = StatusServiceImpl.getService();
     }
 
     @Override
@@ -40,26 +41,77 @@ public class RoleController extends HttpServlet {
         Object object;
         boolean isSuccess = true;
         String message = "Find successfully";
-        if (id == null || id.isBlank()) {
+        if (id == null || "".equals(id)) {
             object = processFindAll(req);
         } else {
-            object = processFindOne(id);
+            object = processFindOne(Integer.parseInt((id)));
             if (object == null) {
                 isSuccess = false;
-                message = "Not found role";
+                message = "Not found status";
             }
         }
-
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(object, isSuccess, message, resp.getStatus());
+        ResponseModel responseModel = ResponseHelper.toResponseModel(object, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 
-    private RoleModel processFindOne(String id) {
-        return roleService.findById(Integer.parseInt(id));
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        StatusModel statusModel = getRequestBody(req);
+        boolean isSuccess = statusService.insert(statusModel);
+        String message;
+        if (isSuccess) {
+            message = "Insert successfully";
+        } else {
+            message = "Insert unsuccessfully";
+        }
+        ResponseModel responseModel = ResponseHelper
+                .toResponseModel(statusModel, isSuccess, message, resp.getStatus());
+
+        returning(resp, responseModel);
     }
 
-    private List<RoleModel> processFindAll(HttpServletRequest req) {
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        StatusModel statusModel = getRequestBody(req);
+        boolean isSuccess = statusService.update(statusModel);
+        String message;
+        if (isSuccess) {
+            message = "Update successfully";
+        } else {
+            message = "Update unsuccessfully";
+        }
+        ResponseModel responseModel = ResponseHelper
+                .toResponseModel(statusModel, isSuccess, message, resp.getStatus());
+
+        returning(resp, responseModel);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String id = req.getParameter("id");
+        boolean isSuccess;
+        String message;
+        if (id == null) {
+            isSuccess = false;
+            message = "Cannot delete status because id is null";
+        } else {
+            isSuccess = statusService.delete(Integer.parseInt(id));
+            if (isSuccess) {
+                message = "Delete successfully";
+            } else {
+                message = "Delete unsuccessfully";
+            }
+        }
+        ResponseModel responseModel = ResponseHelper
+                .toResponseModel(null, isSuccess, message, resp.getStatus());
+        returning(resp, responseModel);
+    }
+
+    private Object processFindOne(int id) {
+        return statusService.findById(id);
+    }
+
+    private Object processFindAll(HttpServletRequest req) {
         Map<String, String[]> requestParams = req.getParameterMap();
 
         int pageSize = Integer.parseInt(requestParams.get("pageSize") == null
@@ -68,72 +120,12 @@ public class RoleController extends HttpServlet {
         int currentPage = Integer.parseInt(requestParams.get("currentPage") == null
                 ? "1" : requestParams.get("currentPage")[0]);
 
-        return roleService.findAll(pageSize, currentPage);
+        return statusService.findAll(pageSize, currentPage);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        RoleModel roleModel = getRoleModelFromRequest(req);
-        boolean isSuccess = roleService.insert(roleModel);
-
-        String message;
-        if (isSuccess)
-            message = "Insert successfully";
-        else
-            message = "Insert unsuccessfully";
-
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
-        returning(resp, responseModel);
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        RoleModel roleModel = getRoleModelFromRequest(req);
-        boolean isSuccess = roleService.update(roleModel);
-
-        String message;
-
-        if (isSuccess)
-            message = "Update successfully";
-        else
-            message = "Update unsuccessfully";
-
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
-        returning(resp, responseModel);
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String id = req.getParameter("id");
-        String message;
-        boolean isSuccess;
-        if (id == null) {
-            isSuccess = false;
-            message = "Cannot delete role because id is null";
-        } else {
-            boolean result = roleService.delete(Integer.parseInt(id));
-            if (result) {
-                isSuccess = true;
-                message = "Delete role successful";
-
-            } else {
-                isSuccess = false;
-                message = "Delete role unsuccessful";
-            }
-        }
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
-        returning(resp, responseModel);
-    }
-
-    private RoleModel getRoleModelFromRequest(HttpServletRequest req) throws IOException {
-        RoleModel roleModel;
-        try (BufferedReader reader = req.getReader()) {
-            roleModel = gson.fromJson(reader, RoleModel.class);
-        }
-        return roleModel;
+    private StatusModel getRequestBody(HttpServletRequest req) throws IOException {
+        String json = req.getReader().lines().collect(Collectors.joining());
+        return gson.fromJson(json, StatusModel.class);
     }
 
     private void returning(HttpServletResponse response, ResponseModel responseModel) throws IOException {

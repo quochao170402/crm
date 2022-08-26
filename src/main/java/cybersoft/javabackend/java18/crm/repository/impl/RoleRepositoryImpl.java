@@ -65,7 +65,7 @@ public class RoleRepositoryImpl extends AbstractRepository<RoleModel> implements
     }
 
     @Override
-    public boolean update(int id, RoleModel roleModel) {
+    public boolean update(RoleModel roleModel) {
         return executeUpdate(connection -> {
             String query = """
                     update roles
@@ -77,14 +77,14 @@ public class RoleRepositoryImpl extends AbstractRepository<RoleModel> implements
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, roleModel.getName());
             statement.setString(2, roleModel.getDescription());
-            statement.setInt(3, id);
+            statement.setInt(3, roleModel.getId());
 
             return statement.executeUpdate();
         }) != 0;
     }
 
     @Override
-    public boolean delete(int id) {
+    public boolean deleteById(int id) {
         return executeUpdate(connection -> {
             String query = """
                     delete from roles
@@ -94,5 +94,56 @@ public class RoleRepositoryImpl extends AbstractRepository<RoleModel> implements
             statement.setInt(1, id);
             return statement.executeUpdate();
         }) != 0;
+    }
+
+    @Override
+    public RoleModel findById(int id) {
+        return executeQuerySingle(connection -> {
+            String query = """
+                    select id, name, description
+                    from roles
+                    where id = ?
+                    """;
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+
+            ResultSet results = statement.executeQuery();
+
+            if (results.next()) {
+                RoleModel role = new RoleModel();
+                role.setId(results.getInt("id"));
+                role.setName(results.getString("name"));
+                role.setDescription(results.getString("description"));
+                return role;
+            }
+            return null;
+        });
+    }
+
+    @Override
+    public List<RoleModel> findAll(int pageSize, int currentPage) {
+        return executeQuery(connection -> {
+            String query = """
+                    select id, name, description
+                    from roles
+                    limit ? offset ?
+                    """;
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, pageSize);
+            statement.setInt(2, (currentPage - 1) * pageSize);
+            ResultSet results = statement.executeQuery();
+
+            List<RoleModel> roles = new ArrayList<>();
+            while (results.next()) {
+                RoleModel role = new RoleModel();
+                role.setId(results.getInt("id"));
+                role.setName(results.getString("name"));
+                role.setDescription(results.getString("description"));
+                roles.add(role);
+            }
+            return roles;
+        });
     }
 }

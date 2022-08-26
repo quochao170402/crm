@@ -31,12 +31,22 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public boolean update(int id, RoleModel roleModel) {
-        return roleRepository.update(id, roleModel);
+    public boolean update(RoleModel roleModel) {
+        return roleRepository.update(roleModel);
     }
 
     @Override
     public boolean delete(int id) {
-        return roleRepository.delete(id);
+        return roleRepository.deleteById(id);
+    }
+
+    @Override
+    public RoleModel findById(int id) {
+        return roleRepository.findById(id);
+    }
+
+    @Override
+    public List<RoleModel> findAll(int pageSize, int currentPage) {
+        return roleRepository.findAll(pageSize, currentPage);
     }
 }

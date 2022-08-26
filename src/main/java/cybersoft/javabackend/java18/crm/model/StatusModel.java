@@ -3,9 +3,7 @@ package cybersoft.javabackend.java18.crm.model;
 import lombok.Data;
 
 @Data
-public class RoleModel {
+public class StatusModel {
     private int id;
     private String name;
-    private String description;
-//    List<UserModel> userModels;
 }
