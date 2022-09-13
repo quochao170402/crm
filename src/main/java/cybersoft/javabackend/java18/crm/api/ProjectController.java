@@ -1,6 +1,7 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
+import cybersoft.javabackend.java18.crm.mapper.ProjectMapper;
 import cybersoft.javabackend.java18.crm.model.ProjectModel;
 import cybersoft.javabackend.java18.crm.service.ProjectService;
 import cybersoft.javabackend.java18.crm.service.impl.ProjectServiceImpl;
@@ -60,9 +61,9 @@ public class ProjectController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ProjectModel projectModel = getRequestBody(req);
+        System.out.println(projectModel);
         boolean isSuccess = projectService.insert(projectModel);
         String message;
-
         if (isSuccess)
             message = "Insert successfully";
         else
@@ -112,7 +113,8 @@ public class ProjectController extends HttpServlet {
     }
 
     private Object processFindOne(String id) {
-        return projectService.findById(Integer.parseInt(id));
+        ProjectModel projectModel = projectService.findById(Integer.parseInt(id));
+        return ProjectMapper.getInstance().toProjectDetailDto(projectModel);
     }
 
     private Object processFindAll(HttpServletRequest req) {

@@ -27,11 +27,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public boolean insert(RoleModel roleModel) {
+        if (roleModel == null) return false;
         return roleRepository.insert(roleModel);
     }
 
     @Override
     public boolean update(RoleModel roleModel) {
+        if (roleModel == null) return false;
         return roleRepository.update(roleModel);
     }
 

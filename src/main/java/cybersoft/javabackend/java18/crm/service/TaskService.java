@@ -16,4 +16,6 @@ public interface TaskService {
     boolean deleteById(int id);
 
     List<TaskModel> findByUserId(int id);
+
+    List<TaskModel> findAllByProject(int id);
 }

@@ -37,9 +37,11 @@ public class RoleController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
+
         Object object;
         boolean isSuccess = true;
         String message = "Find successfully";
+
         if (id == null || id.isBlank()) {
             object = processFindAll(req);
         } else {
@@ -49,7 +51,7 @@ public class RoleController extends HttpServlet {
                 message = "Not found role";
             }
         }
-
+        System.out.println(req.getMethod());
         ResponseModel responseModel = ResponseHelper
                 .toResponseModel(object, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
@@ -74,6 +76,7 @@ public class RoleController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         RoleModel roleModel = getRoleModelFromRequest(req);
+
         boolean isSuccess = roleService.insert(roleModel);
 
         String message;
@@ -84,6 +87,7 @@ public class RoleController extends HttpServlet {
 
         ResponseModel responseModel = ResponseHelper
                 .toResponseModel(null, isSuccess, message, resp.getStatus());
+
         returning(resp, responseModel);
     }
 
@@ -125,6 +129,7 @@ public class RoleController extends HttpServlet {
         }
         ResponseModel responseModel = ResponseHelper
                 .toResponseModel(null, isSuccess, message, resp.getStatus());
+
         returning(resp, responseModel);
     }
 

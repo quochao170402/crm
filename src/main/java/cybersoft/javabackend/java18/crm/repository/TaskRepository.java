@@ -16,4 +16,6 @@ public interface TaskRepository {
     TaskModel findById(int id);
 
     List<TaskModel> findByUserId(int id);
+
+    List<TaskModel> findAllByProject(int id);
 }

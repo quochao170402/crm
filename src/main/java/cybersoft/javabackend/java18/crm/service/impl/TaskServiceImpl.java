@@ -32,11 +32,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public boolean insert(TaskModel taskModel) {
+        if (taskModel == null) return false;
         return taskRepository.insert(taskModel);
     }
 
     @Override
     public boolean update(TaskModel taskModel) {
+        if (taskModel == null) return false;
         return taskRepository.update(taskModel);
     }
 
@@ -48,5 +50,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskModel> findByUserId(int id) {
         return taskRepository.findByUserId(id);
+    }
+
+    @Override
+    public List<TaskModel> findAllByProject(int id) {
+        return taskRepository.findAllByProject(id);
     }
 }

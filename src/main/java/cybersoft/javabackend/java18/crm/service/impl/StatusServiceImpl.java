@@ -34,11 +34,13 @@ public class StatusServiceImpl implements StatusService {
 
     @Override
     public boolean insert(StatusModel statusModel) {
+        if (statusModel == null) return false;
         return statusRepository.insert(statusModel);
     }
 
     @Override
     public boolean update(StatusModel statusModel) {
+        if (statusModel == null) return false;
         return statusRepository.update(statusModel);
     }
 

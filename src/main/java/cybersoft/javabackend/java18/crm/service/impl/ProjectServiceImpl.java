@@ -32,11 +32,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public boolean insert(ProjectModel projectModel) {
+        if (projectModel == null) return false;
         return projectRepository.insert(projectModel);
     }
 
     @Override
     public boolean update(ProjectModel projectModel) {
+        if (projectModel == null) return false;
         return projectRepository.update(projectModel);
     }
 

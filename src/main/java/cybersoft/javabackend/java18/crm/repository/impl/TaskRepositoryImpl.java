@@ -172,4 +172,34 @@ public class TaskRepositoryImpl extends AbstractRepository<TaskModel> implements
             return taskModels;
         });
     }
+
+    @Override
+    public List<TaskModel> findAllByProject(int id) {
+        return executeQuery(connection -> {
+            String query = """
+                    select id, name, start_date, end_date, user_id, job_id, status_id
+                    from tasks
+                    where job_id = ?;
+                    """;
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+
+            ResultSet results = statement.executeQuery();
+            List<TaskModel> taskModels = new ArrayList<>();
+            while (results.next()) {
+                TaskModel taskModel = new TaskModel();
+                taskModel.setId(results.getInt("id"));
+                taskModel.setName(results.getString("name"));
+                taskModel.setStartDate(results.getString("start_date"));
+                taskModel.setEndDate(results.getString("end_date"));
+                taskModel.setUserId(results.getInt("user_id"));
+                taskModel.setProjectId(results.getInt("job_id"));
+                taskModel.setStatusId(results.getInt("status_id"));
+                taskModels.add(taskModel);
+            }
+
+            return taskModels;
+        });
+    }
 }
