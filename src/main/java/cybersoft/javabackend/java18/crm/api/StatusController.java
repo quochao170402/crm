@@ -1,13 +1,13 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
+import cybersoft.javabackend.java18.crm.common.GsonHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseModel;
 import cybersoft.javabackend.java18.crm.model.StatusModel;
 import cybersoft.javabackend.java18.crm.service.StatusService;
 import cybersoft.javabackend.java18.crm.service.impl.StatusServiceImpl;
 import cybersoft.javabackend.java18.crm.utils.UrlUtils;
-import cybersoft.javabackend.java18.crm.utils.common.GsonHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseModel;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -38,50 +38,50 @@ public class StatusController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
+
         Object object;
-        boolean isSuccess = true;
-        String message = "Find successfully";
         if (id == null || "".equals(id)) {
             object = processFindAll(req);
         } else {
-            object = processFindOne(Integer.parseInt((id)));
-            if (object == null) {
-                isSuccess = false;
-                message = "Not found status";
-            }
+            object = processFindOne(Integer.parseInt(id));
         }
-        ResponseModel responseModel = ResponseHelper.toResponseModel(object, isSuccess, message, resp.getStatus());
+
+        ResponseModel responseModel = ResponseHelper
+                .toResponseModel(object, resp.getStatus());
         returning(resp, responseModel);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        StatusModel statusModel = getRequestBody(req);
-        boolean isSuccess = statusService.insert(statusModel);
-        String message;
-        if (isSuccess) {
-            message = "Insert successfully";
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        StatusModel statusModel = getStatusFromRequest(req);
+
+        ResponseModel responseModel;
+
+        if (statusService.insert(statusModel)) {
+            responseModel = ResponseHelper
+                    .toResponseModel(statusModel, resp.getStatus());
         } else {
-            message = "Insert unsuccessfully";
+            responseModel = ResponseHelper
+                    .toErrorResponse("Insert status unsuccessful", resp.getStatus());
         }
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(statusModel, isSuccess, message, resp.getStatus());
 
         returning(resp, responseModel);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        StatusModel statusModel = getRequestBody(req);
-        boolean isSuccess = statusService.update(statusModel);
-        String message;
-        if (isSuccess) {
-            message = "Update successfully";
+        StatusModel statusModel = getStatusFromRequest(req);
+
+        ResponseModel responseModel;
+
+        if (statusService.update(statusModel)) {
+            responseModel = ResponseHelper
+                    .toResponseModel(statusModel, resp.getStatus());
         } else {
-            message = "Update unsuccessfully";
+            responseModel = ResponseHelper
+                    .toErrorResponse("Update status unsuccessful", resp.getStatus());
         }
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(statusModel, isSuccess, message, resp.getStatus());
 
         returning(resp, responseModel);
     }
@@ -89,21 +89,19 @@ public class StatusController extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
-        boolean isSuccess;
-        String message;
+        ResponseModel responseModel;
         if (id == null) {
-            isSuccess = false;
-            message = "Cannot delete status because id is null";
+            responseModel = ResponseHelper
+                    .toErrorResponse("Cannot delete status, because id is null", 400);
         } else {
-            isSuccess = statusService.delete(Integer.parseInt(id));
-            if (isSuccess) {
-                message = "Delete successfully";
+            if (statusService.delete(Integer.parseInt(id))) {
+                responseModel = ResponseHelper
+                        .toResponseModel("Delete status successful", resp.getStatus());
             } else {
-                message = "Delete unsuccessfully";
+                responseModel = ResponseHelper
+                        .toErrorResponse("Delete status unsuccessful", resp.getStatus());
             }
         }
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 
@@ -123,7 +121,7 @@ public class StatusController extends HttpServlet {
         return statusService.findAll(pageSize, currentPage);
     }
 
-    private StatusModel getRequestBody(HttpServletRequest req) throws IOException {
+    private StatusModel getStatusFromRequest(HttpServletRequest req) throws IOException {
         String json = req.getReader().lines().collect(Collectors.joining());
         return gson.fromJson(json, StatusModel.class);
     }

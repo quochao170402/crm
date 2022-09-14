@@ -1,4 +1,4 @@
-package cybersoft.javabackend.java18.crm.utils.common;
+package cybersoft.javabackend.java18.crm.common;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

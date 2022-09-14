@@ -1,12 +1,12 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
+import cybersoft.javabackend.java18.crm.common.ResponseHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseModel;
 import cybersoft.javabackend.java18.crm.model.RoleModel;
 import cybersoft.javabackend.java18.crm.service.RoleService;
 import cybersoft.javabackend.java18.crm.service.impl.RoleServiceImpl;
 import cybersoft.javabackend.java18.crm.utils.UrlUtils;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseModel;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,21 +39,14 @@ public class RoleController extends HttpServlet {
         String id = req.getParameter("id");
 
         Object object;
-        boolean isSuccess = true;
-        String message = "Find successfully";
 
         if (id == null || id.isBlank()) {
             object = processFindAll(req);
         } else {
             object = processFindOne(id);
-            if (object == null) {
-                isSuccess = false;
-                message = "Not found role";
-            }
         }
-        System.out.println(req.getMethod());
         ResponseModel responseModel = ResponseHelper
-                .toResponseModel(object, isSuccess, message, resp.getStatus());
+                .toResponseModel(object, resp.getStatus());
         returning(resp, responseModel);
     }
 
@@ -77,16 +70,13 @@ public class RoleController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         RoleModel roleModel = getRoleModelFromRequest(req);
 
-        boolean isSuccess = roleService.insert(roleModel);
-
-        String message;
-        if (isSuccess)
-            message = "Insert successfully";
+        ResponseModel responseModel;
+        if (roleService.insert(roleModel))
+            responseModel = ResponseHelper
+                    .toResponseModel(roleModel, resp.getStatus());
         else
-            message = "Insert unsuccessfully";
-
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
+            responseModel = ResponseHelper
+                    .toErrorResponse("Insert role unsuccessful", 500);
 
         returning(resp, responseModel);
     }
@@ -94,41 +84,34 @@ public class RoleController extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         RoleModel roleModel = getRoleModelFromRequest(req);
-        boolean isSuccess = roleService.update(roleModel);
 
-        String message;
-
-        if (isSuccess)
-            message = "Update successfully";
+        ResponseModel responseModel;
+        if (roleService.update(roleModel))
+            responseModel = ResponseHelper
+                    .toResponseModel(roleModel, resp.getStatus());
         else
-            message = "Update unsuccessfully";
+            responseModel = ResponseHelper
+                    .toErrorResponse("Update role unsuccessful", 500);
 
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
-        String message;
-        boolean isSuccess;
+        ResponseModel responseModel;
         if (id == null) {
-            isSuccess = false;
-            message = "Cannot delete role because id is null";
+            responseModel = ResponseHelper
+                    .toResponseModel("Cannot delete role, because id is null", 400);
         } else {
-            boolean result = roleService.delete(Integer.parseInt(id));
-            if (result) {
-                isSuccess = true;
-                message = "Delete role successful";
-
+            if (roleService.delete(Integer.parseInt(id))) {
+                responseModel = ResponseHelper
+                        .toResponseModel("Delete role successful", resp.getStatus());
             } else {
-                isSuccess = false;
-                message = "Delete role unsuccessful";
+                responseModel = ResponseHelper
+                        .toErrorResponse("Delete role unsuccessful", resp.getStatus());
             }
         }
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(null, isSuccess, message, resp.getStatus());
 
         returning(resp, responseModel);
     }

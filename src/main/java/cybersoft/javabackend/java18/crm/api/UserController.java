@@ -1,6 +1,9 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
+import cybersoft.javabackend.java18.crm.common.GsonHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseModel;
 import cybersoft.javabackend.java18.crm.dto.UserDetailDto;
 import cybersoft.javabackend.java18.crm.dto.UserDto;
 import cybersoft.javabackend.java18.crm.mapper.UserMapper;
@@ -8,9 +11,6 @@ import cybersoft.javabackend.java18.crm.model.UserModel;
 import cybersoft.javabackend.java18.crm.service.UserService;
 import cybersoft.javabackend.java18.crm.service.impl.UserServiceImpl;
 import cybersoft.javabackend.java18.crm.utils.UrlUtils;
-import cybersoft.javabackend.java18.crm.utils.common.GsonHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseModel;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -86,60 +86,56 @@ public class UserController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserModel user = getRequestBody(req);
-        boolean isSuccess = userService.insert(user);
+        UserModel userModel = getUserFromRequest(req);
 
-        String message;
-        if (isSuccess)
-            message = "Insert successfully";
-        else message = "Insert unsuccessfully";
+        ResponseModel responseModel;
+        if (userService.insert(userModel))
+            responseModel = ResponseHelper
+                    .toResponseModel(userModel, resp.getStatus());
+        else
+            responseModel = ResponseHelper
+                    .toErrorResponse("Insert user unsuccessful", 500);
 
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(user, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
 
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UserModel user = getRequestBody(req);
-        boolean isSuccess = userService.update(user);
+        UserModel userModel = getUserFromRequest(req);
 
-        String message;
-        if (isSuccess)
-            message = "Update successfully";
-        else message = "Update unsuccessfully";
+        ResponseModel responseModel;
+        if (userService.insert(userModel))
+            responseModel = ResponseHelper
+                    .toResponseModel(userModel, resp.getStatus());
+        else
+            responseModel = ResponseHelper
+                    .toErrorResponse("Update user unsuccessful", 500);
 
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(user, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
-
-        boolean isSuccess;
-        String message;
+        ResponseModel responseModel;
         if (id == null) {
-            isSuccess = false;
-            message = "Cannot delete user because id is null";
+            responseModel = ResponseHelper
+                    .toResponseModel("Cannot delete user, because id is null", 400);
         } else {
             if (userService.delete(Integer.parseInt(id))) {
-                isSuccess = true;
-                message = "Delete successfully";
+                responseModel = ResponseHelper
+                        .toResponseModel("Delete user successful", resp.getStatus());
             } else {
-                isSuccess = false;
-                message = "Delete unsuccessfully";
+                responseModel = ResponseHelper
+                        .toResponseModel("Delete user unsuccessful", resp.getStatus());
             }
         }
 
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(id, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 
-    private UserModel getRequestBody(HttpServletRequest req) throws IOException {
+    private UserModel getUserFromRequest(HttpServletRequest req) throws IOException {
         String json = req.getReader().lines().collect(Collectors.joining());
         return gson.fromJson(json, UserModel.class);
     }

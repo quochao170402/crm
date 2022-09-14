@@ -1,15 +1,15 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
+import cybersoft.javabackend.java18.crm.common.GsonHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseModel;
 import cybersoft.javabackend.java18.crm.dto.TaskDto;
 import cybersoft.javabackend.java18.crm.mapper.TaskMapper;
 import cybersoft.javabackend.java18.crm.model.TaskModel;
 import cybersoft.javabackend.java18.crm.service.TaskService;
 import cybersoft.javabackend.java18.crm.service.impl.TaskServiceImpl;
 import cybersoft.javabackend.java18.crm.utils.UrlUtils;
-import cybersoft.javabackend.java18.crm.utils.common.GsonHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseModel;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -44,59 +44,70 @@ public class TaskController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
+
         Object object;
-        boolean isSuccess = true;
-        String message = "Find successfully";
-        if (id != null && !"".equals(id.trim())) {
-            object = processFindOne(Integer.parseInt(id));
-            if (object == null) {
-                isSuccess = false;
-                message = "Not found task";
-            }
-        } else {
+        if (id == null || "".equals(id)) {
             object = processFindAll(req);
+        } else {
+            object = processFindOne(Integer.parseInt(id));
         }
 
-        ResponseModel responseModel = ResponseHelper.toResponseModel(object, isSuccess, message, resp.getStatus());
+        ResponseModel responseModel = ResponseHelper
+                .toResponseModel(object, resp.getStatus());
         returning(resp, responseModel);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        TaskModel taskModel = getRequestBody(req);
-        boolean isSuccess = taskService.insert(taskModel);
-        String message = isSuccess ? "Inert successfully" : "Insert unsuccessfully";
-        ResponseModel responseModel = ResponseHelper.toResponseModel(taskModel, isSuccess, message, resp.getStatus());
-        returning(resp, responseModel);
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        TaskModel taskModel = getTaskFromRequest(req);
 
+        ResponseModel responseModel;
+
+        if (taskService.insert(taskModel)) {
+            responseModel = ResponseHelper
+                    .toResponseModel(taskModel, resp.getStatus());
+        } else {
+            responseModel = ResponseHelper
+                    .toErrorResponse("Insert task unsuccessful", resp.getStatus());
+        }
+
+        returning(resp, responseModel);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        TaskModel taskModel = getRequestBody(req);
-        boolean isSuccess = taskService.update(taskModel);
-        String message = isSuccess ? "Update successfully" : "Update unsuccessfully";
-        ResponseModel responseModel = ResponseHelper.toResponseModel(taskModel, isSuccess, message, resp.getStatus());
+        TaskModel taskModel = getTaskFromRequest(req);
+
+        ResponseModel responseModel;
+
+        if (taskService.update(taskModel)) {
+            responseModel = ResponseHelper
+                    .toResponseModel(taskModel, resp.getStatus());
+        } else {
+            responseModel = ResponseHelper
+                    .toErrorResponse("Update task unsuccessful", resp.getStatus());
+        }
+
         returning(resp, responseModel);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
-        boolean isSuccess;
-        String message;
-        if (id != null && !"".equals(id.trim())) {
-            isSuccess = taskService.deleteById(Integer.parseInt(id));
-            if (isSuccess) {
-                message = "Delete successfully";
-            } else {
-                message = "Delete unsuccessfully";
-            }
+        ResponseModel responseModel;
+        if (id == null) {
+            responseModel = ResponseHelper
+                    .toErrorResponse("Cannot delete task, because id is null", 400);
         } else {
-            isSuccess = false;
-            message = "Delete unsuccessfully because id is null";
+            if (taskService.delete(Integer.parseInt(id))) {
+                responseModel = ResponseHelper
+                        .toResponseModel("Delete task successful", resp.getStatus());
+            } else {
+                responseModel = ResponseHelper
+                        .toErrorResponse("Delete task unsuccessful", resp.getStatus());
+            }
         }
-        ResponseModel responseModel = ResponseHelper.toResponseModel(null, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 
@@ -117,7 +128,7 @@ public class TaskController extends HttpServlet {
         return dtos;
     }
 
-    private TaskModel getRequestBody(HttpServletRequest req) throws IOException {
+    private TaskModel getTaskFromRequest(HttpServletRequest req) throws IOException {
         String json = req.getReader().lines().collect(Collectors.joining());
         return gson.fromJson(json, TaskModel.class);
     }

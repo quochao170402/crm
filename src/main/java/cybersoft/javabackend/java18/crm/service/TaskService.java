@@ -13,7 +13,7 @@ public interface TaskService {
 
     boolean update(TaskModel taskModel);
 
-    boolean deleteById(int id);
+    boolean delete(int id);
 
     List<TaskModel> findByUserId(int id);
 

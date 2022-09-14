@@ -43,7 +43,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public boolean deleteById(int id) {
+    public boolean delete(int id) {
         return taskRepository.deleteById(id);
     }
 

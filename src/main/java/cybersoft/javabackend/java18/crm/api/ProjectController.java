@@ -1,14 +1,14 @@
 package cybersoft.javabackend.java18.crm.api;
 
 import com.google.gson.Gson;
+import cybersoft.javabackend.java18.crm.common.GsonHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseHelper;
+import cybersoft.javabackend.java18.crm.common.ResponseModel;
 import cybersoft.javabackend.java18.crm.mapper.ProjectMapper;
 import cybersoft.javabackend.java18.crm.model.ProjectModel;
 import cybersoft.javabackend.java18.crm.service.ProjectService;
 import cybersoft.javabackend.java18.crm.service.impl.ProjectServiceImpl;
 import cybersoft.javabackend.java18.crm.utils.UrlUtils;
-import cybersoft.javabackend.java18.crm.utils.common.GsonHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseHelper;
-import cybersoft.javabackend.java18.crm.utils.common.ResponseModel;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -41,74 +41,68 @@ public class ProjectController extends HttpServlet {
         String id = req.getParameter("id");
 
         Object object;
-        boolean isSuccess = true;
-        String message = "Find successfully";
         if (id == null || "".equals(id)) {
             object = processFindAll(req);
         } else {
             object = processFindOne(id);
-            if (object == null) {
-                isSuccess = false;
-                message = "Not found project";
-            }
         }
 
         ResponseModel responseModel = ResponseHelper
-                .toResponseModel(object, isSuccess, message, resp.getStatus());
+                .toResponseModel(object, resp.getStatus());
         returning(resp, responseModel);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         ProjectModel projectModel = getRequestBody(req);
-        System.out.println(projectModel);
-        boolean isSuccess = projectService.insert(projectModel);
-        String message;
-        if (isSuccess)
-            message = "Insert successfully";
-        else
-            message = "Insert unsuccessfully";
 
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(projectModel, isSuccess, message, resp.getStatus());
+        ResponseModel responseModel;
+
+        if (projectService.insert(projectModel)) {
+            responseModel = ResponseHelper
+                    .toResponseModel(projectModel, resp.getStatus());
+        } else {
+            responseModel = ResponseHelper
+                    .toErrorResponse("Insert project unsuccessful", resp.getStatus());
+        }
+
         returning(resp, responseModel);
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ProjectModel projectModel = getRequestBody(req);
-        boolean isSuccess = projectService.update(projectModel);
-        String message;
-        if (isSuccess)
-            message = "Update successfully";
-        else
-            message = "Update unsuccessfully";
 
-        ResponseModel responseModel = ResponseHelper
-                .toResponseModel(projectModel, isSuccess, message, resp.getStatus());
+        ResponseModel responseModel;
+
+        if (projectService.update(projectModel)) {
+            responseModel = ResponseHelper
+                    .toResponseModel(projectModel, resp.getStatus());
+        } else {
+            responseModel = ResponseHelper
+                    .toErrorResponse("Update project unsuccessful", resp.getStatus());
+        }
+
         returning(resp, responseModel);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String id = req.getParameter("id");
-        String message;
-        boolean isSuccess;
+        ResponseModel responseModel;
         if (id == null) {
-            isSuccess = false;
-            message = "Cannot delete project because id is null";
+            responseModel = ResponseHelper
+                    .toErrorResponse("Cannot delete project, because id is null", 400);
         } else {
-            boolean result = projectService.delete(Integer.parseInt(id));
-            if (result) {
-                isSuccess = true;
-                message = "Delete successful";
-
+            if (projectService.delete(Integer.parseInt(id))) {
+                responseModel = ResponseHelper
+                        .toResponseModel("Delete project successful", resp.getStatus());
             } else {
-                isSuccess = false;
-                message = "Delete unsuccessful";
+                responseModel = ResponseHelper
+                        .toErrorResponse("Delete project unsuccessful", resp.getStatus());
             }
         }
-        ResponseModel responseModel = ResponseHelper.toResponseModel(null, isSuccess, message, resp.getStatus());
         returning(resp, responseModel);
     }
 

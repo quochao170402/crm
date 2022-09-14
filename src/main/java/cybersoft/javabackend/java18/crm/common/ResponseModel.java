@@ -1,4 +1,4 @@
-package cybersoft.javabackend.java18.crm.utils.common;
+package cybersoft.javabackend.java18.crm.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
