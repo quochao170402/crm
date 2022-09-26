@@ -66,7 +66,6 @@ public class ProjectController extends HttpServlet {
             responseModel = ResponseHelper
                     .toErrorResponse("Insert project unsuccessful", resp.getStatus());
         }
-
         returning(resp, responseModel);
     }
 
