@@ -19,4 +19,6 @@ public interface UserRepository {
     boolean delete(int id);
 
     List<UserModel> findByRole(int id);
+
+    UserModel findByEmail(String email);
 }

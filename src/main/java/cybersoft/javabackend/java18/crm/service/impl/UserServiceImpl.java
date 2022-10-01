@@ -12,7 +12,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private UserServiceImpl() {
-        userRepository = UserRepositoryImpl.getRepository();
+        userRepository = UserRepositoryImpl.getInstance();
     }
 
     public static UserService getService() {

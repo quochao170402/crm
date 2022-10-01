@@ -1,5 +1,6 @@
 package cybersoft.javabackend.java18.crm.repository;
 
+import cybersoft.javabackend.java18.crm.dto.TaskDto;
 import cybersoft.javabackend.java18.crm.model.TaskModel;
 
 import java.util.List;

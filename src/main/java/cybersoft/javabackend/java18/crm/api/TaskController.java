@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 @WebServlet(name = "taskController",
         urlPatterns = {
-                UrlUtils.TASK,
+                "/api/tasks"
         })
 public class TaskController extends HttpServlet {
     private TaskService taskService = null;
@@ -36,6 +36,7 @@ public class TaskController extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
+        System.out.println("Task servlet");
         taskService = TaskServiceImpl.getService();
         gson = GsonHelper.getGson();
         mapper = TaskMapper.getInstance();
@@ -60,13 +61,13 @@ public class TaskController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        TaskModel taskModel = getTaskFromRequest(req);
-
+        TaskDto taskDto = getTaskFromRequest(req);
+        TaskModel taskModel = TaskMapper.getInstance().toModel(taskDto);
         ResponseModel responseModel;
 
         if (taskService.insert(taskModel)) {
             responseModel = ResponseHelper
-                    .toResponseModel(taskModel, resp.getStatus());
+                    .toResponseModel(taskDto, resp.getStatus());
         } else {
             responseModel = ResponseHelper
                     .toErrorResponse("Insert task unsuccessful", resp.getStatus());
@@ -77,13 +78,14 @@ public class TaskController extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        TaskModel taskModel = getTaskFromRequest(req);
+        TaskDto taskDto = getTaskFromRequest(req);
+        TaskModel taskModel = TaskMapper.getInstance().toModel(taskDto);
 
         ResponseModel responseModel;
 
         if (taskService.update(taskModel)) {
             responseModel = ResponseHelper
-                    .toResponseModel(taskModel, resp.getStatus());
+                    .toResponseModel(taskDto, resp.getStatus());
         } else {
             responseModel = ResponseHelper
                     .toErrorResponse("Update task unsuccessful", resp.getStatus());
@@ -128,9 +130,10 @@ public class TaskController extends HttpServlet {
         return dtos;
     }
 
-    private TaskModel getTaskFromRequest(HttpServletRequest req) throws IOException {
+    private TaskDto getTaskFromRequest(HttpServletRequest req) throws IOException {
         String json = req.getReader().lines().collect(Collectors.joining());
-        return gson.fromJson(json, TaskModel.class);
+        System.out.println(json);
+        return gson.fromJson(json, TaskDto.class);
     }
 
     private void returning(HttpServletResponse response, ResponseModel responseModel) throws IOException {
